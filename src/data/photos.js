@@ -1,0 +1,88 @@
+// picsum.photos: always loads, no auth, consistent via seed
+const u = (seed) => `https://picsum.photos/seed/${seed}/800/800`
+const t = (seed) => `https://picsum.photos/seed/${seed}/300/300`
+
+export const CATEGORY_PHOTOS = {
+  '독서모임': [
+    { full: u('book-lib-1'),   thumb: t('book-lib-1'),   label: '도서관' },
+    { full: u('book-read-2'),  thumb: t('book-read-2'),  label: '독서 모임' },
+    { full: u('book-cafe-3'),  thumb: t('book-cafe-3'),  label: '책과 커피' },
+    { full: u('book-open-4'),  thumb: t('book-open-4'),  label: '펼친 책' },
+    { full: u('book-cozy-5'),  thumb: t('book-cozy-5'),  label: '아늑한 독서' },
+    { full: u('book-stack-6'), thumb: t('book-stack-6'), label: '쌓인 책들' },
+    { full: u('book-shelf-7'), thumb: t('book-shelf-7'), label: '책장' },
+    { full: u('book-color-8'), thumb: t('book-color-8'), label: '컬러풀 책' },
+    { full: u('book-out-9'),   thumb: t('book-out-9'),   label: '야외 독서' },
+    { full: u('book-time-10'), thumb: t('book-time-10'), label: '책 읽는 시간' },
+  ],
+  '공동체모임': [
+    { full: u('comm-gather-1'),  thumb: t('comm-gather-1'),  label: '다양한 사람들' },
+    { full: u('comm-meet-2'),    thumb: t('comm-meet-2'),    label: '팀 미팅' },
+    { full: u('comm-out-3'),     thumb: t('comm-out-3'),     label: '야외 모임' },
+    { full: u('comm-talk-4'),    thumb: t('comm-talk-4'),    label: '그룹 토론' },
+    { full: u('comm-village-5'), thumb: t('comm-village-5'), label: '마을 모임' },
+    { full: u('comm-team-6'),    thumb: t('comm-team-6'),    label: '팀워크' },
+    { full: u('comm-vol-7'),     thumb: t('comm-vol-7'),     label: '자원봉사' },
+    { full: u('comm-garden-8'),  thumb: t('comm-garden-8'),  label: '마을 정원' },
+    { full: u('comm-neigh-9'),   thumb: t('comm-neigh-9'),   label: '커뮤니티' },
+    { full: u('comm-cafe-10'),   thumb: t('comm-cafe-10'),   label: '동네 만남' },
+  ],
+  '행사/이벤트': [
+    { full: u('event-party-1'),  thumb: t('event-party-1'),  label: '파티 불빛' },
+    { full: u('event-cheer-2'),  thumb: t('event-cheer-2'),  label: '축하 이벤트' },
+    { full: u('event-out-3'),    thumb: t('event-out-3'),    label: '야외 행사' },
+    { full: u('event-conf-4'),   thumb: t('event-conf-4'),   label: '색종이 축하' },
+    { full: u('event-fest-5'),   thumb: t('event-fest-5'),   label: '축제 인파' },
+    { full: u('event-market-6'), thumb: t('event-market-6'), label: '마켓 장터' },
+    { full: u('event-stage-7'),  thumb: t('event-stage-7'),  label: '야외 공연' },
+    { full: u('event-fun-8'),    thumb: t('event-fun-8'),    label: '파티' },
+    { full: u('event-street-9'), thumb: t('event-street-9'), label: '거리 축제' },
+    { full: u('event-light-10'), thumb: t('event-light-10'), label: '조명 행사' },
+  ],
+  '발표회': [
+    { full: u('pres-speak-1'),  thumb: t('pres-speak-1'),  label: '발표하는 사람' },
+    { full: u('pres-art-2'),    thumb: t('pres-art-2'),    label: '작품 전시' },
+    { full: u('pres-stage-3'),  thumb: t('pres-stage-3'),  label: '무대 공연' },
+    { full: u('pres-gallery-4'),thumb: t('pres-gallery-4'),label: '갤러리' },
+    { full: u('pres-grad-5'),   thumb: t('pres-grad-5'),   label: '졸업식' },
+    { full: u('pres-micro-6'),  thumb: t('pres-micro-6'),  label: '무대 발표' },
+    { full: u('pres-conf-7'),   thumb: t('pres-conf-7'),   label: '컨퍼런스' },
+    { full: u('pres-open-8'),   thumb: t('pres-open-8'),   label: '전시 오프닝' },
+    { full: u('pres-award-9'),  thumb: t('pres-award-9'),  label: '시상식' },
+    { full: u('pres-perf-10'),  thumb: t('pres-perf-10'),  label: '아트 퍼포먼스' },
+  ],
+  '소식알림': [
+    { full: u('news-paper-1'),  thumb: t('news-paper-1'),  label: '신문 읽기' },
+    { full: u('news-digit-2'),  thumb: t('news-digit-2'),  label: '디지털 소통' },
+    { full: u('news-light-3'),  thumb: t('news-light-3'),  label: '빛나는 화면' },
+    { full: u('news-msg-4'),    thumb: t('news-msg-4'),    label: '메시지' },
+    { full: u('news-letter-5'), thumb: t('news-letter-5'), label: '뉴스레터' },
+    { full: u('news-shout-6'),  thumb: t('news-shout-6'),  label: '확성기 공지' },
+    { full: u('news-social-7'), thumb: t('news-social-7'), label: '소셜미디어' },
+    { full: u('news-board-8'),  thumb: t('news-board-8'),  label: '커뮤니티 공지판' },
+    { full: u('news-notice-9'), thumb: t('news-notice-9'), label: '공지 게시판' },
+    { full: u('news-mobile-10'),thumb: t('news-mobile-10'),label: '알림 모바일' },
+  ],
+  '자율 템플릿': [
+    { full: u('free-color-1'),  thumb: t('free-color-1'),  label: '추상 컬러' },
+    { full: u('free-paint-2'),  thumb: t('free-paint-2'),  label: '추상 페인트' },
+    { full: u('free-mural-3'),  thumb: t('free-mural-3'),  label: '컬러풀 벽화' },
+    { full: u('free-water-4'),  thumb: t('free-water-4'),  label: '수채화' },
+    { full: u('free-bokeh-5'),  thumb: t('free-bokeh-5'),  label: '보케 불빛' },
+    { full: u('free-sunset-6'), thumb: t('free-sunset-6'), label: '산 노을' },
+    { full: u('free-nature-7'), thumb: t('free-nature-7'), label: '자연 경관' },
+    { full: u('free-cherry-8'), thumb: t('free-cherry-8'), label: '벚꽃' },
+    { full: u('free-flower-9'), thumb: t('free-flower-9'), label: '컬러풀 꽃' },
+    { full: u('free-grad-10'),  thumb: t('free-grad-10'),  label: '그라디언트 배경' },
+  ],
+}
+
+// Default photo per category for template gallery preview
+export const CATEGORY_DEFAULT_PHOTO = {
+  '독서모임':   u('book-lib-1'),
+  '공동체모임':  u('comm-gather-1'),
+  '행사/이벤트': u('event-party-1'),
+  '발표회':     u('pres-speak-1'),
+  '소식알림':   u('news-paper-1'),
+  '자율 템플릿': u('free-color-1'),
+}
