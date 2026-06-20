@@ -51,6 +51,33 @@ function CardThumb({ card, gradient, index, isCurrent, onClick }) {
   )
 }
 
+// Inline-editable tag badge
+function TagEditor({ tag, onChange }) {
+  const [editing, setEditing] = useState(false)
+  const inputRef = useRef(null)
+
+  if (editing) {
+    return (
+      <input
+        ref={inputRef}
+        className="canvas-tag canvas-tag-input"
+        value={tag}
+        onChange={e => onChange(e.target.value)}
+        onBlur={() => setEditing(false)}
+        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); setEditing(false) } }}
+        autoFocus
+        maxLength={20}
+      />
+    )
+  }
+  return (
+    <div className="canvas-tag canvas-tag-editable" onClick={() => setEditing(true)} title="클릭하여 태그 편집">
+      {tag || '+ 태그'}
+      <span className="canvas-tag-edit-icon">✏</span>
+    </div>
+  )
+}
+
 export default function EditorModal({ template, onClose }) {
   const { category, title, gradient, accentColor, defaultData } = template
   const canvasRef = useRef(null)
@@ -64,6 +91,8 @@ export default function EditorModal({ template, onClose }) {
   const [saving, setSaving] = useState(false)
   const [copied, setCopied] = useState(false)
   const [showPhotos, setShowPhotos] = useState(false)
+  // genKey forces contentEditable elements to remount when AI generates new text
+  const [genKey, setGenKey] = useState(0)
 
   const card = cards[currentIdx]
 
@@ -100,6 +129,7 @@ export default function EditorModal({ template, onClose }) {
     const result = generateText(category)
     setCards(prev => prev.map((c, i) => i === currentIdx ? { ...c, mainText: result.mainText, subText: result.subText } : c))
     setInstagram({ text: result.instagramText, hashtags: result.hashtags, visible: true })
+    setGenKey(k => k + 1) // remount contentEditable so new text appears
     setGenerating(false)
   }, [category, currentIdx])
 
@@ -125,14 +155,15 @@ export default function EditorModal({ template, onClose }) {
     setSaving(false)
   }, [title, currentIdx])
 
-  // Canvas background
   const bgStyle = card.selectedPhoto || card.bgImageUrl
     ? { backgroundImage: `url(${card.selectedPhoto || card.bgImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
     : { background: gradient }
 
-  // Box style: when opacity=0 or disabled → completely invisible (no backdrop-filter)
   const showBox = card.boxEnabled && card.boxOpacity > 0
   const boxBg = showBox ? hexToRgba(card.boxColor, card.boxOpacity / 100) : 'transparent'
+
+  // Key for contentEditable remounting
+  const editKey = `${currentIdx}-${genKey}`
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -176,11 +207,49 @@ export default function EditorModal({ template, onClose }) {
               )}
             </section>
 
+            {/* Font & Text Style */}
+            <section className="ctrl-section">
+              <div className="ctrl-section-title">✍ 글꼴 & 스타일</div>
+              <div style={{ marginBottom: 12 }}>
+                <span className="ctrl-lbl">폰트</span>
+                <select className="ctrl-select" value={card.font} onChange={e => set('font', e.target.value)}
+                  style={{ fontFamily: `'${card.font}', sans-serif` }}>
+                  {FONTS.map(f => (
+                    <option key={f.value} value={f.value} style={{ fontFamily: `'${f.value}', sans-serif` }}>{f.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="style-rows">
+                <div className="style-row">
+                  <span className="style-row-lbl">메인 텍스트</span>
+                  <div className="style-row-controls">
+                    <span className="ctrl-lbl-inline">{card.fontSize}px</span>
+                    <input type="range" min="16" max="60" value={card.fontSize}
+                      onChange={e => set('fontSize', Number(e.target.value))} className="ctrl-slider style-slider" />
+                    <div className="ctrl-color-wrap">
+                      <input type="color" value={card.textColor} onChange={e => set('textColor', e.target.value)} className="ctrl-color" />
+                    </div>
+                  </div>
+                </div>
+                <div className="style-row">
+                  <span className="style-row-lbl">서브 텍스트</span>
+                  <div className="style-row-controls">
+                    <span className="ctrl-lbl-inline">{card.subFontSize}px</span>
+                    <input type="range" min="10" max="30" value={card.subFontSize}
+                      onChange={e => set('subFontSize', Number(e.target.value))} className="ctrl-slider style-slider" />
+                    <div className="ctrl-color-wrap">
+                      <input type="color" value={card.subTextColor} onChange={e => set('subTextColor', e.target.value)} className="ctrl-color" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
             {/* Background photo */}
             <section className="ctrl-section">
-              <div className="ctrl-section-title">배경 이미지</div>
+              <div className="ctrl-section-title">🖼 배경 이미지</div>
               <label className="btn-upload-block">
-                <span>🖼 내 PC에서 이미지 업로드</span>
+                <span>📁 내 PC에서 이미지 업로드</span>
                 <input type="file" accept="image/*" onChange={handleUpload} hidden />
               </label>
 
@@ -193,7 +262,6 @@ export default function EditorModal({ template, onClose }) {
 
               {showPhotos && (
                 <div className="photo-grid">
-                  {/* No-photo option */}
                   <div
                     className={`photo-cell no-bg ${!card.selectedPhoto && !card.bgImageUrl ? 'sel' : ''}`}
                     onClick={() => { set('selectedPhoto', null); set('bgImageUrl', null) }}
@@ -226,10 +294,10 @@ export default function EditorModal({ template, onClose }) {
             {/* Overlay box */}
             <section className="ctrl-section">
               <div className="ctrl-section-title-row">
-                <span className="ctrl-section-title">가독성 박스 (Overlay)</span>
+                <span className="ctrl-section-title">🔲 가독성 박스</span>
                 <label className="toggle-label">
                   <input type="checkbox" checked={card.boxEnabled} onChange={e => set('boxEnabled', e.target.checked)} />
-                  <span>사용하기</span>
+                  <span>사용</span>
                 </label>
               </div>
               {card.boxEnabled && (
@@ -255,81 +323,15 @@ export default function EditorModal({ template, onClose }) {
               )}
             </section>
 
-            {/* Tag / Category */}
-            <section className="ctrl-section">
-              <div className="ctrl-section-title">태그 / 카테고리</div>
-              <input
-                type="text"
-                className="ctrl-input"
-                value={card.tag}
-                onChange={e => set('tag', e.target.value)}
-                placeholder="태그 입력 (예: 독서모임, BOOK CLUB)"
-                maxLength={20}
-              />
-              <p className="ctrl-hint">캔버스 상단 배지에 표시됩니다</p>
-            </section>
-
-            {/* Main Text */}
-            <section className="ctrl-section">
-              <div className="ctrl-section-title">메인 텍스트</div>
-              <textarea className="ctrl-textarea" rows={3} value={card.mainText}
-                onChange={e => set('mainText', e.target.value)} />
-              <div className="ctrl-row2" style={{ marginTop: 10 }}>
-                <div style={{ flex: 1 }}>
-                  <span className="ctrl-lbl">폰트</span>
-                  <select className="ctrl-select" value={card.font} onChange={e => set('font', e.target.value)}
-                    style={{ fontFamily: `'${card.font}', sans-serif` }}>
-                    {FONTS.map(f => (
-                      <option key={f.value} value={f.value} style={{ fontFamily: `'${f.value}', sans-serif` }}>{f.label}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <div className="ctrl-row2">
-                <div>
-                  <span className="ctrl-lbl">크기 {card.fontSize}px</span>
-                  <div className="slider-row">
-                    <input type="range" min="16" max="60" value={card.fontSize}
-                      onChange={e => set('fontSize', Number(e.target.value))} className="ctrl-slider" />
-                  </div>
-                </div>
-                <div>
-                  <span className="ctrl-lbl">색상</span>
-                  <div className="ctrl-color-wrap">
-                    <input type="color" value={card.textColor} onChange={e => set('textColor', e.target.value)} className="ctrl-color" />
-                    <span className="ctrl-color-val">{card.textColor}</span>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* Sub Text */}
-            <section className="ctrl-section">
-              <div className="ctrl-section-title">서브 텍스트</div>
-              <textarea className="ctrl-textarea" rows={3} value={card.subText}
-                onChange={e => set('subText', e.target.value)} />
-              <div className="ctrl-row2">
-                <div>
-                  <span className="ctrl-lbl">크기 {card.subFontSize}px</span>
-                  <div className="slider-row">
-                    <input type="range" min="10" max="30" value={card.subFontSize}
-                      onChange={e => set('subFontSize', Number(e.target.value))} className="ctrl-slider" />
-                  </div>
-                </div>
-                <div>
-                  <span className="ctrl-lbl">색상</span>
-                  <div className="ctrl-color-wrap">
-                    <input type="color" value={card.subTextColor} onChange={e => set('subTextColor', e.target.value)} className="ctrl-color" />
-                    <span className="ctrl-color-val">{card.subTextColor}</span>
-                  </div>
-                </div>
-              </div>
-            </section>
-
           </div>
 
           {/* ══ RIGHT: Canvas ═══════════════════════════════ */}
           <div className="canvas-side">
+
+            {/* Edit hint */}
+            <div className="canvas-edit-hint">
+              ✏️ 카드 위의 텍스트를 직접 클릭하여 편집하세요
+            </div>
 
             {/* Card count */}
             <div className="card-count-bar">
@@ -350,42 +352,45 @@ export default function EditorModal({ template, onClose }) {
               )}
               <div className="canvas-deco" style={{ background: accentColor }} />
 
-              {/* Card number badge */}
               {cardCount > 1 && (
                 <div className="canvas-card-badge">{currentIdx + 1}/{cardCount}</div>
               )}
 
-              {/* Tag + Text box grouped together */}
+              {/* Tag + Text box */}
               <div className="canvas-content-wrap">
-                {card.tag && (
-                  <div className="canvas-tag">{card.tag}</div>
-                )}
+                <TagEditor tag={card.tag} onChange={val => set('tag', val)} />
 
-              {/* Text box */}
-              <div
-                className="canvas-box"
-                style={{ background: boxBg }}
-              >
-                <div className="canvas-maintext" style={{
-                  fontFamily: `'${card.font}', sans-serif`,
-                  fontSize: `${card.fontSize}px`,
-                  color: card.textColor,
-                }}>
-                  {card.mainText.split('\n').map((l, i, a) => (
-                    <span key={i}>{l}{i < a.length - 1 && <br />}</span>
-                  ))}
-                </div>
-                <div className="canvas-subtext" style={{
-                  fontFamily: `'${card.font}', sans-serif`,
-                  fontSize: `${card.subFontSize}px`,
-                  color: card.subTextColor,
-                }}>
-                  {card.subText.split('\n').map((l, i, a) => (
-                    <span key={i}>{l}{i < a.length - 1 && <br />}</span>
-                  ))}
+                <div className="canvas-box" style={{ background: boxBg }}>
+                  {/* Directly editable main text */}
+                  <div
+                    key={`main-${editKey}`}
+                    className="canvas-maintext canvas-editable"
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={e => set('mainText', e.currentTarget.innerText)}
+                    dangerouslySetInnerHTML={{ __html: card.mainText.replace(/\n/g, '<br>') }}
+                    style={{
+                      fontFamily: `'${card.font}', sans-serif`,
+                      fontSize: `${card.fontSize}px`,
+                      color: card.textColor,
+                    }}
+                  />
+                  {/* Directly editable sub text */}
+                  <div
+                    key={`sub-${editKey}`}
+                    className="canvas-subtext canvas-editable"
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={e => set('subText', e.currentTarget.innerText)}
+                    dangerouslySetInnerHTML={{ __html: card.subText.replace(/\n/g, '<br>') }}
+                    style={{
+                      fontFamily: `'${card.font}', sans-serif`,
+                      fontSize: `${card.subFontSize}px`,
+                      color: card.subTextColor,
+                    }}
+                  />
                 </div>
               </div>
-              </div>{/* end canvas-content-wrap */}
 
               <div className="canvas-bottom-bar" style={{ background: accentColor }} />
             </div>
